@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# enforce conventional commits
+
+commit_msg_file="$1"
+commit_msg=$(head -n1 "$commit_msg_file")
+valid_types="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+
+# check if type is valid (with optional revert:)
+if ! echo "$commit_msg" | grep -qE "^(revert: )?($valid_types)"; then
+    echo "❌ Invalid commit type."
+    echo "   Allowed types: $valid_types"
+    echo "   Example: feat: add new button"
+    exit 1
+fi
+
+# check if optional breaking change "!" and scope are correct
+if ! echo "$commit_msg" | grep -qE "^(revert: )?($valid_types)!?(\([a-zA-Z0-9_. -]+\))?: "; then
+    echo "❌ Commit format invalid: optional breaking change ! or scope is malformed."
+    echo "   Example: feat!(ui): add new button"
+    exit 1
+fi
+
+# check that first character of subject (after colon + space) is lowercase
+# allow optional (#123) issue references at the end
+if ! echo "$commit_msg" | grep -qE "^(revert: )?($valid_types)!?(\([a-zA-Z0-9_. -]+\))?: [a-z][^#]*?( \(#?[0-9]+\))?$"; then
+    echo "❌ First character of subject must be lowercase or issue reference malformed."
+    echo "   Example: feat(ui): add new button (#12)"
+    exit 1
+fi
+
+# check that commit description does not end with a full stop
+subject=$(echo "$commit_msg" | sed -E "s/^(revert: )?($valid_types)!?(\([a-zA-Z0-9_. -]+\))?: //")
+# remove issue reference
+subject=$(echo "$subject" | sed -E "s/ \(#?[0-9]+\)$//")
+last_char="${subject: -1}"
+if [ "$last_char" = "." ]; then
+    echo "❌ Commit description must not end with a full stop."
+    echo "   Example: feat(ui): add new button"
+    exit 1
+fi
