@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# enforce conventional branch naming
+
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+valid_branch_name='^(feat|fix|refactor|docs|chore|ci|test)/\d+(?:-[a-zA-Z]+)+$'
+
+if [ "$branch_name" != "main" ] && ! echo "$branch_name" | grep -qE "$valid_branch_name"; then
+    echo "❌ Invalid branch name: '$branch_name'"
+    echo "Branch names must match: <type>/<short-description> (kebab-case)"
+    echo "Allowed types: feat, fix, refactor, docs, chore, ci, test"
+    echo "Examples:"
+    echo "  feat/add-new-button"
+    echo "  fix/login-timeout"
+    echo "  refactor/ui-layout"
+    echo "  docs/update-readme"
+    echo "  chore/update-dependencies"
+    exit 1
+fi
