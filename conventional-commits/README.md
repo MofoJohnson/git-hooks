@@ -13,9 +13,9 @@ cd .git/hooks/
 2. Add the git hooks:
 
 ```bash
-curl -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/commit-msg
-curl -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/pre-push
-curl -H 'Accept: application/vnd.github.v3.raw' -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/prepare-commit-msg
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/commit-msg
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/pre-push
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/MofoJohnson/git-hooks/contents/conventional-commits/prepare-commit-msg
 ```
 
 3. The hooks are now added:
