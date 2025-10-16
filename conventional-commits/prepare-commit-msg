@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# automatically append issue number from branch name to commit message
+# branch_name = feat/36-add-new-button
+# issue_number = 36
+# feat: add new button (#36)
+
+commit_msg_file="$1"
+commit_source="$2"
+
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+issue_number=$(echo "$branch_name" | sed -nE 's|^[^/]+/([0-9]+)-.*|\1|p')
+
+# modify revert commits to use conventional commit format
+# Revert "feat: add new button" -> revert: feat: add new button
+if grep -q '^Revert "' "$1"; then
+    sed -i '' 's/^Revert /revert: /' "$1"
+    sed -i '' 's/"//g' "$1"
+fi
+
+# skip special commits like merges, rebases, etc.
+case "$commit_source" in
+    merge|squash|commit)
+        exit 0
+        ;;
+esac
+
+if [ -n "$issue_number" ]; then
+    if ! grep -q "(#$issue_number)" "$commit_msg_file"; then
+        first_line=$(head -n1 "$commit_msg_file")
+        rest=$(tail -n +2 "$commit_msg_file")
+
+    echo "${first_line} (#$issue_number)" > "$commit_msg_file"
+        echo "$rest" >> "$commit_msg_file"
+    fi
+fi
