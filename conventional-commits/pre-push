@@ -3,17 +3,24 @@
 # enforce conventional branch naming
 
 branch_name=$(git rev-parse --abbrev-ref HEAD)
-valid_branch_name='^(feat|fix|refactor|docs|chore|ci|test)/\d+(?:-[a-zA-Z]+)+$'
+valid_branch_name="^(feat|fix|refactor|docs|chore|ci|test)(/[a-z0-9-]+)?/[0-9]+-[a-z0-9-]+$"
 
 if [ "$branch_name" != "main" ] && ! echo "$branch_name" | grep -qE "$valid_branch_name"; then
     echo "❌ Invalid branch name: '$branch_name'"
-    echo "Branch names must match: <type>/<short-description> (kebab-case)"
+    echo ""
+    echo "Branch names must match one of these formats:"
+    echo "  <type>/<issue-number>-<description>"
+    echo "  <type>/<scope>/<issue-number>-<description>"
+    echo ""
     echo "Allowed types: feat, fix, refactor, docs, chore, ci, test"
+    echo "Scope (if used) must be lowercase and may contain numbers and hyphens."
+    echo "Description must be kebab-case (lowercase letters, numbers, hyphens) and follow the issue number separated by a hyphen."
+    echo ""
     echo "Examples:"
-    echo "  feat/add-new-button"
-    echo "  fix/login-timeout"
-    echo "  refactor/ui-layout"
-    echo "  docs/update-readme"
-    echo "  chore/update-dependencies"
+    echo "  feat/123-add-login-button"
+    echo "  fix/456-fix-auth-bug"
+    echo "  feat/ui/789-add-modal-component"
+    echo "  refactor/api/1011-improve-endpoint-performance"
+    echo ""
     exit 1
 fi
