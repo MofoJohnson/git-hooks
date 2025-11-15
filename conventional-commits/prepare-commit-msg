@@ -1,36 +1,35 @@
-#!/bin/sh
+#!/bin/bash
 
-# automatically append issue number from branch name to commit message
-# branch_name = feat/36-add-new-button
-# issue_number = 36
-# feat: add new button (#36)
+# Automatically prepend issue number from branch name to commit message
+# Supports branch names like:
+#   feat/36-add-new-button
+#   docs/func-spec/6-create-markdown-template
+#   docs/6-create-markdown-template
 
 commit_msg_file="$1"
 commit_source="$2"
 
 branch_name=$(git rev-parse --abbrev-ref HEAD)
-issue_number=$(echo "$branch_name" | sed -nE 's|^[^/]+/([0-9]+)-.*|\1|p')
+issue_number=$(echo "$branch_name" | sed -nE 's|.*/([0-9]+)-.*|\1|p')
 
-# modify revert commits to use conventional commit format
-# Revert "feat: add new button" -> revert: feat: add new button
-if grep -q '^Revert "' "$1"; then
-    sed -i '' 's/^Revert /revert: /' "$1"
-    sed -i '' 's/"//g' "$1"
+# Handle "Revert" commits
+if grep -q '^Revert "' "$commit_msg_file"; then
+    sed -i '' 's/^Revert /revert: /' "$commit_msg_file"
+    sed -i '' 's/"//g' "$commit_msg_file"
 fi
 
-# skip special commits like merges, rebases, etc.
-case "$commit_source" in
-    merge|squash|commit)
-        exit 0
-        ;;
-esac
+# Skip merge or squash commits
+if [ "$commit_source" = "merge" ] || [ "$commit_source" = "squash" ]; then
+    exit 0
+fi
 
+# Prepend issue number if present and not already there
 if [ -n "$issue_number" ]; then
-    if ! grep -q "(#$issue_number)" "$commit_msg_file"; then
+    if ! grep -q "#$issue_number" "$commit_msg_file"; then
         first_line=$(head -n1 "$commit_msg_file")
         rest=$(tail -n +2 "$commit_msg_file")
 
-    echo "${first_line} (#$issue_number)" > "$commit_msg_file"
+        echo "(#$issue_number) ${first_line}" > "$commit_msg_file"
         echo "$rest" >> "$commit_msg_file"
     fi
 fi
